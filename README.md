@@ -1,6 +1,12 @@
 # ssh
 
-## ssh tips
+## ssh key generation
+
+```bash
+ssh-keygen -t rsa [-f key_filename] [-C comment]
+```
+
+## ssh tips
 
 - How do I retrieve the public key from a SSH private key?
 
