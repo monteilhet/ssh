@@ -2,8 +2,12 @@
 
 ## ssh key generation
 
+    ssh-keygen -t rsa [-f key_filename] [-C comment] [-N ""]
+
 ```bash
-ssh-keygen -t rsa [-f key_filename] [-C comment]
+# generate key pair rsakey, rsakey.pub without passphrase
+ssh-keygen -t rsa -f rsakey -N ""
+
 ```
 
 ## ssh tips
