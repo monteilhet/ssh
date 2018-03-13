@@ -2,25 +2,25 @@
 Table of Contents
 =================
 
-  * [Introduction](#Introduction)
-  * [Configuration](#Configuration)
+  * [Introduction](#introduction)
+  * [Configuration](#configuration)
   * [ssh keys](#ssh-keys)
-     * [Retrieve the public key from a SSH private key](#Retrieve-the-public-key-from-a-SSH-private-key)
-     * [Retrieve md5 fingerprint from public key](#Retrieve-md5-fingerprint-from-public-key)
+     * [Retrieve the public key from a SSH private key](#retrieve-the-public-key-from-a-ssh-private-key)
+     * [Retrieve md5 fingerprint from public key](#retrieve-md5-fingerprint-from-public-key)
   * [ssh agent](#ssh-agent)
-     * [Using an SSH Agent](#Using-an-SSH-Agent)
+     * [Using an SSH Agent](#using-an-ssh-agent)
      * [agent forwarding](#agent-forwarding)
   * [ssh client](#ssh-client)
-     * [Copy the Public Key](#Copy-the-Public-Key)
+     * [Copy the Public Key](#copy-the-public-key)
      * [ssh connection](#ssh-connection)
-     * [Client Configuration File](#Client-Configuration-File)
-     * [Disabling ssh host key checking](#Disabling-ssh-host-key-checking)
-     * [Connexion behind a proxy](#Connexion-behind-a-proxy)
+     * [Client Configuration File](#client-configuration-file)
+     * [Disabling ssh host key checking](#disabling-ssh-host-key-checking)
+     * [Connexion behind a proxy](#connexion-behind-a-proxy)
      * [ssh jump host](#ssh-jump-host)
-     * [Local Forwarding](#Local-Forwarding)
-     * [Remote Forwarding](#Remote-Forwarding)
-     * [X11 Forwarding](#X11-Forwarding)
-  * [Tools](#Tools)
+     * [Local Forwarding](#local-forwarding)
+     * [Remote Forwarding](#remote-forwarding)
+     * [X11 Forwarding](#x11-forwarding)
+  * [Tools](#tools)
      * [scp](#scp)
      * [sshfs](#sshfs)
 
@@ -30,7 +30,7 @@ Table of Contents
 Secure Shell (better known as SSH) is a cryptographic network protocol which allows users to securely perform a number of network services over an unsecured network.
 
 
-## Installation
+## Installation
 
 ```bash
 aptitude install openssh-server
@@ -100,7 +100,7 @@ set +v
 
 SSH keys provide a more secure way of logging into a server with SSH than using a password alone.
 
-### Set Up SSH Keys
+### Set Up SSH Keys
 
 Generating a key pair provides you with two long string of characters: a public and a private key.
 
@@ -494,12 +494,6 @@ Host 192.168.0.*
    UserKnownHostsFile=/dev/null
 ```
 
-
-
-
-
-
-
 ### Connexion behind a proxy
 
 
@@ -512,7 +506,7 @@ Host bitbucket.org
  ProxyCommand connect -H proxy-http:8080 %h %p
 ```
 
-### ssh jump host
+### ssh jump host
 
 Historically, we are using nc on the jump host, to forward the connection to the target host.
 
@@ -589,7 +583,7 @@ Or for instance access service on port 80 on intranet connecting through firewal
     ssh -L 8080:intranet:80 root@firewall  #  http://localhost:8080
     
 
-### Remote Forwarding
+### Remote Forwarding
 
 Make services on your local system / local network accessible to the remote host via a remote listener.  This sounds like an odd thing to want to do, but perhaps you want to expose a services that lets you download your tools.
 
@@ -613,7 +607,7 @@ ForwardX11 yes
 
 # Tools
 
-## scp
+## scp
 
 
 scp copies files between hosts on a network.  It uses ssh for data transfer, and uses the same authentication and provides the same security as ssh.
