@@ -3,10 +3,13 @@ Table of Contents
 =================
 
   * [Introduction](#introduction)
+  * [Installation](#installation)
   * [Configuration](#configuration)
   * [ssh keys](#ssh-keys)
      * [Retrieve the public key from a SSH private key](#retrieve-the-public-key-from-a-ssh-private-key)
-     * [Retrieve md5 fingerprint from public key](#retrieve-md5-fingerprint-from-public-key)
+     * [Retrieve md5 fingerprint from public/private key](#retrieve-md5-fingerprint-from-public-or-private-key)
+     * [convert between OpenSSH and SSH2](#convert-between-openssh-and-ssh2)
+     * [Converting public key to PKCS format](#converting-public-key-to-pkcs-format)
   * [ssh agent](#ssh-agent)
      * [Using an SSH Agent](#using-an-ssh-agent)
      * [agent forwarding](#agent-forwarding)
@@ -23,6 +26,9 @@ Table of Contents
   * [Tools](#tools)
      * [scp](#scp)
      * [sshfs](#sshfs)
+     * [sftp](#sftp)
+     * [sshpass](#sshpass)
+     * [rsync](#rsync)
 
 
 ## Introduction
@@ -116,6 +122,7 @@ Generating a key pair provides you with two long string of characters: a public 
  + -y :  This option will read a private OpenSSH format file and print an OpenSSH public key to stdout.
 
 
+       ssh-keygen -t rsa [-f key_filename] [-C comment] [-N ""]
 
 
 
@@ -197,7 +204,7 @@ set +v
     set +v
 
 
-### Retrieve md5 fingerprint from public key
+### Retrieve md5 fingerprint from public or private key
 
 
 ```bash
@@ -205,9 +212,12 @@ set -v
 
 # How do I retrieve md5 fingerprint from public key
 
+ssh-keygen -E md5 -lf  rsa_key.pub
+
+# or private key 
 ssh-keygen -E md5 -lf  rsa_key
 
-ssh-keygen -E md5 -lf  rsa_lkey
+ssh-keygen -E md5 -lf  rsa_lkey.pub
 
 set +v
 ```
@@ -215,10 +225,14 @@ set +v
     
     # How do I retrieve md5 fingerprint from public key
     
+    ssh-keygen -E md5 -lf  rsa_key.pub
+    2048 MD5:eb:29:9d:34:64:c0:ac:5a:f1:93:17:3c:21:f0:02:d2 test key 256b (RSA)
+    
+    # or private key 
     ssh-keygen -E md5 -lf  rsa_key
     2048 MD5:eb:29:9d:34:64:c0:ac:5a:f1:93:17:3c:21:f0:02:d2 test key 256b (RSA)
     
-    ssh-keygen -E md5 -lf  rsa_lkey
+    ssh-keygen -E md5 -lf  rsa_lkey.pub
     4096 MD5:89:40:b2:8c:b6:3c:00:65:a4:12:54:77:f2:21:08:71 test key 512b (RSA)
     
     set +v
@@ -228,9 +242,9 @@ set +v
 ```bash
 set -v
 
-# How do I retrieve fingerprint from public key
+# How do I retrieve fingerprint from public/private key
 
-ssh-keygen -lf  rsa_lkey
+ssh-keygen -lf  rsa_lkey.pub
 
 set +v
 ```
@@ -238,11 +252,85 @@ set +v
     
     # How do I retrieve fingerprint from public key
     
-    ssh-keygen -lf  rsa_lkey
+    ssh-keygen -lf  rsa_lkey.pub
     4096 SHA256:vBPddRpS0o8BqqY2Nn7zMFkB5Pe/8UfrrlcqKasY7e0 test key 512b (RSA)
     
     set +v
 
+
+### convert between OpenSSH and SSH2
+
+https://burnz.wordpress.com/2007/12/14/ssh-convert-openssh-to-ssh2-and-vise-versa/
+
+
+Convert OpenSSH key to SSH2 key
+
+`-e`  : read a private or public OpenSSH key file and print to stdout the key in one of the formats specified by the -m option.  The default export format is “RFC4716”.
+
+    ssh-keygen -e -f ~/.ssh/id_dsa.pub > ~/.ssh/id_dsa_ssh2.pub
+
+Convert SSH2 key to OpenSSH key
+
+`-i` : read an unencrypted private (or public) key file in the format specified by the -m option and print an 
+OpenSSH compatible private (or public) key to stdout.
+
+    ssh-keygen -i -f ~/.ssh/id_dsa_1024_a.pub > ~/.ssh/id_dsa_1024_a_openssh.pub
+    
+    
+
+
+```bash
+set -v
+
+# Convert openssh to ssh2 public key
+
+ssh-keygen -e -f rsa_key.pub | tee rsa_key_ssh2.pub
+
+# Convert ssh2 to openssh public key
+
+ssh-keygen -i -f rsa_key_ssh2.pub
+
+set +v
+```
+
+    
+    # Convert openssh to ssh2 public key
+    
+    ssh-keygen -e -f rsa_key.pub | tee rsa_key_ssh2.pub
+    ---- BEGIN SSH2 PUBLIC KEY ----
+    Comment: "2048-bit RSA, converted by cnuser@cnuser-VirtualBox from Ope"
+    AAAAB3NzaC1yc2EAAAADAQABAAABAQC7fkn23EBmNXX8KYu3ljQYJLsOJD7Uw2O9xHDSZs
+    vAVJYjZywuZyp9hU+Y1EwHQRcsMkpkF4Qtdd/Ri1MnYEhmhyNPodANwdKWl3KyHVQVTgA3
+    5f3/WjTW/z3201xL6G0inrOtaIknH5hz1PmgC2HyerLP8qOz9pWOwUuY3o+OS+I6TKrU0N
+    8Pq0kWhpt/dRo7ZWkKfJRRYzW9IYpYTLVBvRm35jWcnlBjyCSWeOApqQau8LF87Fqm4A5K
+    txyJVqt1id9t3cDdke/Pv2yL+T1Yp+UYDNbq2sehf+CtFTyIdKvkUNRAuul1n4EpGcPuer
+    mm2IOMnIBiMXTIPeJ0gyZj
+    ---- END SSH2 PUBLIC KEY ----
+    
+    # Convert ssh2 to openssh public key
+    
+    ssh-keygen -i -f rsa_key_ssh2.pub
+    ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7fkn23EBmNXX8KYu3ljQYJLsOJD7Uw2O9xHDSZsvAVJYjZywuZyp9hU+Y1EwHQRcsMkpkF4Qtdd/Ri1MnYEhmhyNPodANwdKWl3KyHVQVTgA35f3/WjTW/z3201xL6G0inrOtaIknH5hz1PmgC2HyerLP8qOz9pWOwUuY3o+OS+I6TKrU0N8Pq0kWhpt/dRo7ZWkKfJRRYzW9IYpYTLVBvRm35jWcnlBjyCSWeOApqQau8LF87Fqm4A5KtxyJVqt1id9t3cDdke/Pv2yL+T1Yp+UYDNbq2sehf+CtFTyIdKvkUNRAuul1n4EpGcPuermm2IOMnIBiMXTIPeJ0gyZj
+    
+    set +v
+
+
+### Converting public key to PKCS format
+
+ 
+#### Generating PKCS#1 
+
+generate PEM DER ASN.1 PKCS#1 RSA Public key  : -----BEGIN RSA PUBLIC KEY-----
+
+```bash
+ssh-keygen -f rsa_key.pub -e -m pem > rsa_key.pub.pem  
+```
+
+#### Generating PKCS#8 
+
+```bash
+ssh-keygen -f rsa_key.pub -e -m PKCS8 > rsa_key.pub.pem  
+```
 
 ## ssh agent
 
@@ -541,6 +629,20 @@ Host server-10.10.*.*
   ProxyCommand ssh -A int@bastion -W $(echo %h|cut -d- -f2):%p
 ```
 
+Using command line
+
+```bash
+
+ssh -o UserKnownHostsFile=/dev/null \
+    -o StrictHostKeyChecking=no \
+    -o ProxyCommand="ssh -o UserKnownHostsFile=/dev/null \
+                         -o StrictHostKeyChecking=no \
+                         -i ${SSH_KEY_PATH} \
+                         -W %h:%p ${DEF_USER}@${SSH_PROXY}" \
+    -i ${SSH_KEY_PATH}${USER}@${SSHIP}
+
+```
+
 
 ### Local Forwarding
 
@@ -652,3 +754,37 @@ For instance
 To unmount remote filesystem
 
     umount /media/zclef
+    
+## sftp
+
+
+`sftp` — secure file transfer program
+
+sftp is an interactive file transfer program, similar to ftp, which performs all operations over an encrypted ssh(1) transport. It may also use many features of ssh, such as public key authentication and compression.  sftp connects and logs into the specified host, then enters an interactive command mode.
+
+
+    sftp -P 2222 sftp_user@89.185.10.1
+
+
+## sshpass
+
+`sshpass` noninteractive ssh password provider
+ + `-p`password : The password is given on the command line.
+ + `-f`filename : The password is the first line of the file filename.
+ + `-e` : The password is taken from the environment variable "SSHPASS".
+
+
+
+
+
+sshpass is a utility designed for running ssh using the mode referred to as "keyboard-interactive" password authentication, but in non-interactive mode.
+
+
+    sshpass -f <(echo $pass) ssh -4 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \
+    -o GSSAPIAuthentication=no ${USER}@${SSHIP}    
+
+
+## rsync
+
+http://www.informatix.fr/tutoriels/php/rsync-comment-synchroniser-des-fichiers-a-travers-une-connexion-ssh-164
+
