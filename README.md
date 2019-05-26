@@ -6,6 +6,7 @@ Table of Contents
   * [Installation](#installation)
   * [Configuration](#configuration)
   * [ssh keys](#ssh-keys)
+     * [ssh-keygen additional options to manage known_hosts entries](#ssh-keygen-additional-options-to-manage-known_hosts-entries)
      * [Retrieve the public key from a SSH private key](#retrieve-the-public-key-from-a-ssh-private-key)
      * [Retrieve md5 fingerprint from public/private key](#retrieve-md5-fingerprint-from-public-or-private-key)
      * [convert between OpenSSH and SSH2](#convert-between-openssh-and-ssh2)
@@ -16,6 +17,7 @@ Table of Contents
   * [ssh client](#ssh-client)
      * [Copy the Public Key](#copy-the-public-key)
      * [ssh connection](#ssh-connection)
+     * [Testing connection](#Testing-connection)
      * [Client Configuration File](#client-configuration-file)
      * [Disabling ssh host key checking](#disabling-ssh-host-key-checking)
      * [Connexion behind a proxy](#connexion-behind-a-proxy)
@@ -40,13 +42,27 @@ Secure Shell (better known as SSH) is a cryptographic network protocol which all
 
 ```bash
 aptitude install openssh-server
-
 ```
 
 ## Configuration
 
 
+OpenSSH SSH daemon configuration file
+
     /etc/ssh/sshd_config
+    
+For instance some defaults values on Debian
+```
+PermitRootLogin without-password
+X11Forwarding yes
+UsePAM yes
+```
+
+**Disable root login** : 
+disable SSH remote login for root. This can be done by modifying the contents of a configuration file /etc/ssh/sshd_config. Look specifically for PermitRootLogin and set it to no.
+
+
+ * PermitRootLogin=without-password/prohibit-password bans all interactive authentication methods, allowing only public-key
 
  * PermitRootLogin yes : autorise l'utilistateur root à se connecter au serveur avec un mot de passe
  * PermitRootLogin without-password : autorise l'utilistateur root à se connecter au serveur avec une clé uniquement
@@ -57,6 +73,11 @@ aptitude install openssh-server
  * Protocol 2 : openssh peut utiliser 2 protocoles SSH1 ou SSH2, 
 
 
+https://www.admin-linux.fr/nauthoriser-les-connexions-ssh-root-que-par-cle/
+
+
+How to disable SSH timeout:
+https://www.simplified.guide/ssh/disable-timeout
 
 
 
@@ -64,8 +85,10 @@ aptitude install openssh-server
 set -v
 head /etc/ssh/sshd_config
 
-# at openssh a pair of asymetric key is generated to identify the server (RSA and DSA)
-ls -l /etc/ssh/ssh_host_{rsa,dsa}_key 
+# at openssh installation,  a pair of asymetric key is generated to identify the server (RSA and DSA)
+
+ls -l /etc/ssh/ssh_host_{rsa,dsa}_key
+
 ls -l /etc/ssh/ssh_host_{rsa,dsa}_key.pub
 
 ssh-keygen -l -f /etc/ssh/ssh_host_rsa_key.pub
@@ -75,29 +98,31 @@ set +v
 ```
 
     head /etc/ssh/sshd_config
-    # Package generated configuration file
-    # See the sshd_config(5) manpage for details
+    #	$OpenBSD: sshd_config,v 1.101 2017/03/14 07:19:07 djm Exp $
     
-    # What ports, IPs and protocols we listen for
-    Port 22
-    # Use these options to restrict which interfaces/protocols sshd will bind to
-    #ListenAddress ::
-    #ListenAddress 0.0.0.0
-    Protocol 2
-    # HostKeys for protocol version 2
+    # This is the sshd server system-wide configuration file.  See
+    # sshd_config(5) for more information.
     
-    # at openssh a pair of asymetric key is generated to identify the server (RSA and DSA)
-    ls -l /etc/ssh/ssh_host_{rsa,dsa}_key 
-    -rw------- 1 root root  672 sept. 11 10:45 /etc/ssh/ssh_host_dsa_key
-    -rw------- 1 root root 1679 sept. 11 10:45 /etc/ssh/ssh_host_rsa_key
+    # This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin
+    
+    # The strategy used for options in the default sshd_config shipped with
+    # OpenSSH is to specify options with their default value where
+    # possible, but leave them commented.  Uncommented options override the
+    
+    # at openssh installation,  a pair of asymetric key is generated to identify the server (RSA and DSA)
+    
+    ls -l /etc/ssh/ssh_host_{rsa,dsa}_key
+    ls: impossible d'accéder à '/etc/ssh/ssh_host_dsa_key': Aucun fichier ou dossier de ce type
+    -rw------- 1 root root 1675 mars   3 23:39 /etc/ssh/ssh_host_rsa_key
+    
     ls -l /etc/ssh/ssh_host_{rsa,dsa}_key.pub
-    -rw-r--r-- 1 root root 612 sept. 11 10:45 /etc/ssh/ssh_host_dsa_key.pub
-    -rw-r--r-- 1 root root 404 sept. 11 10:45 /etc/ssh/ssh_host_rsa_key.pub
+    ls: impossible d'accéder à '/etc/ssh/ssh_host_dsa_key.pub': Aucun fichier ou dossier de ce type
+    -rw-r--r-- 1 root root 419 mars   3 23:39 /etc/ssh/ssh_host_rsa_key.pub
     
     ssh-keygen -l -f /etc/ssh/ssh_host_rsa_key.pub
-    2048 SHA256:XgMN4n3+8EOjvJSRugP+LDKhvvu74Rujlq5rBew/SlY root@cnuser-VirtualBox (RSA)
+    2048 SHA256:tvlEE7ZbURxvdYpeifA8SJhYViTriGMZuO1YjVM62Bc root@user-HP-Compaq-8200-Elite-CMT-PC (RSA)
     ssh-keygen -l -f /etc/ssh/ssh_host_ecdsa_key.pub
-    256 SHA256:1H8t0FBREYVAt+xXIqY0m7QKfqjUpkwwntzL5ILM5cc root@cnuser-VirtualBox (ECDSA)
+    256 SHA256:NWqEewt0ezOHo2kLebF94CdYZy6oty2A+1aChAWEIB4 root@user-HP-Compaq-8200-Elite-CMT-PC (ECDSA)
     
     set +v
 
@@ -118,7 +143,7 @@ Generating a key pair provides you with two long string of characters: a public 
  + -f output_keyfile : Specifies the filename of the key file, by default ~/.ssh/id_rsa & ~/.ssh/id_rsa.pub
  + -q : silence ssh-keygen
  + -E fingerprint_hash : Specifies the hash algorithm used when displaying key fingerprints. “md5” “sha256” 
- + -l : Show fingerprint of specified public key file
+ + -l : Show fingerprint of specified public key file (sha256 by default)
  + -y :  This option will read a private OpenSSH format file and print an OpenSSH public key to stdout.
 
 
@@ -180,6 +205,62 @@ set +v
     
     cat rsa_lkey.pub
     ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDBKd+hO5//RW1aEU/zLRsAUuCcgdOJJ0Oyeni9REr+p+rkFNiJOV6N3a19zv9ELlOhSnzF5vmyS7JD/T6frBEmv08VR5DA01qEQ553Qko6GI5Yonap0xy2NXDRM82pKa8G8UoM5VmQksJ+uRWTbdK8Cc1U9VjFNVckkEzIF0abcwRL18/FoV/MbEd7LMPyFVmZbhjmqS5pF02srlXw0f+F6uK761fweeruWZ75aK3oKjQobPOiJ0kfVafV+a4u3lMqTkV5Be1DSSkx2RJRH/K08rotN+UkFoy0P4IGbTMvV18/2hRqhNe/iSUA61Jy4J5fnu7Bw5YtEUrypjxjLucyFb8/UGhCu85CgB9Uk6nDmm+oxrHyVFCT+ofzpfGVqq/pVI923kxzC1tmbnpBuWlp9UcsLZVLDIWPAn8DPKSl1mWALN0GRrqe0O16xbiTwKag6NRJI9wL60Jybm8LX3hmK41La9iQuy0YF/NDZ2vvuXVew6IURiQOE7g8lTjLJcZWsXgOghVZkz3MyBovry8yTschw+Di/QlvyP1CeS5VKLo//E3Q8jV5b6g4O2kgSlFskJ84dkoxgunO8NYPX+9+zpTtBk1mc9QWkPDfr68pP0D/O7zSEBe8PrbUAnsoj4yY5qmiVyeT87RJBzYqFrE5tojIabfWsAtmoJUqDLTGrw== test key 512b
+    
+    set +v
+
+
+### ssh-keygen additional options to manage known_hosts entries
+
+
+```
+
+ssh-keygen -F myhost         # shows myhosts's line in the known_hosts file
+ssh-keygen -l -F myhost      # additionally shows myhost's fingerprint
+ssh-keygen -R myhost         # remove myhost's line from known_hosts
+
+
+```
+
+NB Depending on ssh client configuration (HashKnownHosts yes) the hostname stored in the known_host file can be hashes.
+
+
+```bash
+set  -v
+
+# search bitbucket.org host in known_hosts 
+ssh-keygen -F bitbucket.org
+
+# search bitbucket.org host in known_hosts and show fingerprint
+ssh-keygen -l -F bitbucket.org
+
+# first entry in known_hosts
+sed  -n 1p ~/.ssh/known_hosts
+
+# compute hash of the first entry
+ssh-keygen -l -f <(sed  -n 1p ~/.ssh/known_hosts | cut -d' ' -f2,3)
+
+set +v
+```
+
+    
+    # search bitbucket.org host in known_hosts 
+    ssh-keygen -F bitbucket.org
+    # Host bitbucket.org found: line 1 
+    |1|uMSNUjUbZ05qauz/dZBLRMFkgX8=|sIB+Oczn/A1Jhg/KkpQWHYpw7lE= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
+    
+    # search bitbucket.org host in known_hosts and show fingerprint
+    ssh-keygen -l -F bitbucket.org
+    # Host bitbucket.org found: line 1 
+    bitbucket.org RSA SHA256:zzXQOXSRBEiUtuE8AikJYKwbHaxvSc0ojez9YXaGp1A 
+    
+    # first entry in known_hosts
+    sed  -n 1p ~/.ssh/known_hosts
+    |1|uMSNUjUbZ05qauz/dZBLRMFkgX8=|sIB+Oczn/A1Jhg/KkpQWHYpw7lE= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
+    
+    # compute hash of the first entry
+    ssh-keygen -l -f <(sed  -n 1p ~/.ssh/known_hosts | cut -d' ' -f2,3)
+    sed  -n 1p ~/.ssh/known_hosts | cut -d' ' -f2,3
+    2048 SHA256:zzXQOXSRBEiUtuE8AikJYKwbHaxvSc0ojez9YXaGp1A no comment (RSA)
     
     set +v
 
@@ -386,6 +467,14 @@ Host *
 
 ## ssh client
 
+### Installation
+
+```bash
+aptitude install openssh-client
+
+```
+
+
 ### Copy the Public Key
 
 You can copy the public key into the new machine's authorized_keys file with the ssh-copy-id command.   
@@ -460,6 +549,36 @@ Force use of password
 
     ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no example.com
 
+### Testing connection
+
+```
+ssh -T git@github.com 
+```
+
+
+
+```bash
+ssh -T git@github.com
+```
+
+    Hi monteilhet! You've successfully authenticated, but GitHub does not provide shell access.
+
+
+
+
+### Running ssh command
+ 
+```
+ssh user1@server1 command 
+
+# running a local script remotely
+ssh $HOST < script.sh
+```
+ 
+ A few ways to execute commands remotely using SSH:
+ https://zaiste.net/a_few_ways_to_execute_commands_remotely_using_ssh/
+ 
+
 ### Client Configuration File
 
 NB global client configuration file : `/etc/ssh/ssh_config`
@@ -479,7 +598,12 @@ Host *
 ```
 Useful option :
  * `HashKnownHosts yes` : hashes  the hostname stored in the known_host file.
- * `CheckHostIP` : specifies whether or not ssh will additionally check the host IP address that connect to the server to detect DNS spoofing
+ * `CheckHostIP` : If set to yes (the default), ssh will additionally check the host IP address in the known_hosts file (to detect if a host key changed due to DNS spoofing)
+
+How to disable SSH timeout on the client side (https://www.simplified.guide/ssh/disable-timeout), use option
+
+    # system config in /etc/ssh/ssh_config or at user level in ~/.ssh/config
+    ServerAliveInterval 30
 
 
 http://pentestmonkey.net/cheat-sheet/ssh-cheat-sheet
@@ -596,7 +720,7 @@ Host bitbucket.org
 
 ### ssh jump host
 
-Historically, we are using nc on the jump host, to forward the connection to the target host.
+Historically, we are using `nc` on the jump host, to forward the connection to the target host.
 
 ```
 # gateway behind proy 
@@ -614,6 +738,7 @@ Host lab
 ```
 
 NB ssh jump host without nc (netcat), using `ssh -W %h:22`
+https://chrigl.de/posts/2014/03/03/ssh-jump-host-without-nc-netcat.html
 
 `-W host:port` :  Requests that standard input and output on the client be forwarded to host on port over the secure channel.  Implies -N, -T, ExitOnForwardFailure and ClearAllForwardings and works with Protocol version 2 only.
 
@@ -784,7 +909,148 @@ sshpass is a utility designed for running ssh using the mode referred to as "key
     -o GSSAPIAuthentication=no ${USER}@${SSHIP}    
 
 
+ + kash propagation arborescente de commande
+ + pdsh boucle d'exécution de commandes à distance
+
 ## rsync
 
-http://www.informatix.fr/tutoriels/php/rsync-comment-synchroniser-des-fichiers-a-travers-une-connexion-ssh-164
+ + http://www.informatix.fr/tutoriels/php/rsync-comment-synchroniser-des-fichiers-a-travers-une-connexion-ssh-164
+ + https://www.tecmint.com/rsync-local-remote-file-synchronization-commands/
+
+`rsync` -- a fast, versatile, remote (and local) file-copying tool
+  + -a, --archive : archive mode (<=> -rlptgo ) allows copying files recursively and it also preserves symbolic links, file permissions, user & group ownerships and timestamps
+  + -v, --verbose : increase verbosity
+  + -h : human-readable, output numbers in a human-readable format
+  + -r, --recursive : recurse into directories
+  + -l, --links : copy symlinks as symlinks,  When symlinks are encountered, recreate the symlink on the destination.
+  + -p, --perms : preserve permissions
+  + -x, --one-file-system : don't cross filesystem boundaries (=>ignore mount points)
+  + -t, --times : preserve modification times
+  + -g, --group : preserve group
+  + -o, --owner : preserve owner (super-user only)
+  + -z, --compress : compress file data during the transfer
+  + -n, --dry-run : makes rsync perform a trial run that doesn’t make any changes
+  + --delete : delete extraneous files from dest dirs
+  + --exclude=PATTERN : exclude files matching PATTERN
+  + --exclude-from=FILE : read exclude patterns from FILE
+  + --max-size=SIZE : tells rsync to avoid transferring any file that is larger than the specified SIZE
+  + --bwlimit=RATE : allows you to specify the maximum transfer rate for the data sent over the socket
+  + --progress : show progress during transfer
+  + --stats : print a verbose set of statistics on  the file transfer,
+  
+    rsync [options] source-folder copy-folder
+
+
+Use cases:
+ 
+ * Copy/Sync Files and Directory Locally
+ 
+ * Copy/Sync Files and Directory to or From a Server (NB over ssh)
+ 
+        # local to remote
+        rsync -avz rpmpkgs/ root@192.168.0.101:/home/
+        # remote to local
+        rsync -avzh root@192.168.0.100:/home/tarunika/rpmpkgs /tmp/myrpms
+        
+        
+NB by default rsync remote copy use ssh when specifying a target as user@host:/path/to/files, but it can be useful ot use -e ssh option to specify a specific port or private key to use, e.g.  -e 'ssh -p 2222' or -e 'ssh -i /path/to/private_key'  cf https://serverfault.com/questions/378939/do-you-need-e-ssh-for-rsync
+
+
+
+```bash
+set -v
+
+mkdir /tmp/D
+
+# Copy/Sync a Directory on Local Computer
+
+# Copy/Sync a File on a Local Computer
+rsync -vh /etc/passwd /tmp/D
+ls -l /tmp/D
+
+# copy directory and content
+rsync -avzh /usr/share/doc/rsync /tmp/D
+ls -R /tmp/D
+
+
+# Copy/Sync Files and Directory to or From a Server
+# by default remote rsync use (ssh)
+readlink -f $(which rsh)  # check rsh symlink
+
+
+rm -rf /tmp/D
+
+set +v
+```
+
+    
+    mkdir /tmp/D
+    
+    # Copy/Sync a Directory on Local Computer
+    
+    # Copy/Sync a File on a Local Computer
+    rsync -vh /etc/passwd /tmp/D
+    passwd
+    
+    sent 2.41K bytes  received 35 bytes  4.89K bytes/sec
+    total size is 2.33K  speedup is 0.95
+    ls -l /tmp/D
+    total 4
+    -rw-r--r-- 1 user user 2327 juil. 19 08:33 passwd
+    
+    # copy directory and content
+    rsync -avzh /usr/share/doc/rsync /tmp/D
+    sending incremental file list
+    rsync/
+    rsync/README.Debian.gz
+    rsync/README.gz
+    rsync/TODO.gz
+    rsync/changelog.Debian.gz
+    rsync/copyright
+    rsync/tech_report.tex.gz
+    rsync/examples/
+    rsync/examples/logrotate.conf.rsync
+    rsync/examples/rsyncd.conf
+    rsync/scripts/
+    rsync/scripts/atomic-rsync.gz
+    rsync/scripts/cull_options.gz
+    rsync/scripts/cvs2includes.gz
+    rsync/scripts/file-attr-restore.gz
+    rsync/scripts/files-to-excludes.gz
+    rsync/scripts/git-set-file-times.gz
+    rsync/scripts/logfilter.gz
+    rsync/scripts/lsh.gz
+    rsync/scripts/mnt-excl.gz
+    rsync/scripts/munge-symlinks.gz
+    rsync/scripts/rrsync.gz
+    rsync/scripts/rsyncstats.gz
+    
+    sent 34.40K bytes  received 416 bytes  69.63K bytes/sec
+    total size is 33.93K  speedup is 0.97
+    ls -R /tmp/D
+    /tmp/D:
+    passwd  [0m[01;34mrsync[0m
+    
+    /tmp/D/rsync:
+    [01;31mchangelog.Debian.gz[0m  [01;34mexamples[0m          [01;31mREADME.gz[0m  [01;31mtech_report.tex.gz[0m
+    copyright            [01;31mREADME.Debian.gz[0m  [01;34mscripts[0m    [01;31mTODO.gz[0m
+    
+    /tmp/D/rsync/examples:
+    logrotate.conf.rsync  rsyncd.conf
+    
+    /tmp/D/rsync/scripts:
+    [01;31matomic-rsync.gz[0m  [01;31mfile-attr-restore.gz[0m   [01;31mlogfilter.gz[0m  [01;31mmunge-symlinks.gz[0m
+    [01;31mcull_options.gz[0m  [01;31mfiles-to-excludes.gz[0m   [01;31mlsh.gz[0m        [01;31mrrsync.gz[0m
+    [01;31mcvs2includes.gz[0m  [01;31mgit-set-file-times.gz[0m  [01;31mmnt-excl.gz[0m   [01;31mrsyncstats.gz[0m
+    
+    
+    # Copy/Sync Files and Directory to or From a Server
+    # by default remote rsync use
+    readlink -f $(which rsh)
+    /usr/bin/ssh
+    
+    
+    rm -rf /tmp/D
+    
+    set +v
 
